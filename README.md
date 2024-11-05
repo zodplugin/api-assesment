@@ -22,7 +22,7 @@ Sebelum memulai, pastikan Anda telah menginstal:
 ## Instalasi
 
 1. Clone repositori ini: 
-   `git clone ahttps://github.com/zodplugin/api-assesment`
+   `git clone https://github.com/zodplugin/api-assesment`
 
 2. Pindah ke direktori proyek: 
    `cd api-assesment`
