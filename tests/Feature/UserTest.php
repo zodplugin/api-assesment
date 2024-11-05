@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\UserRole;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class UserTest extends TestCase
@@ -52,13 +53,10 @@ class UserTest extends TestCase
                 ->assertJsonStructure(['access_token', 'token_type', 'expires_in']);
     }
 
-
-    public function test_user_can_get_all_users()
+    public function test_user_index_with_pagination()
     {
         $admin = User::factory()->create();
         $admin->userRoles()->create(['role' => 'admin']);
-
-
 
         $loginResponse = $this->postJson('/api/login', [
             'email' => $admin->email,
@@ -66,13 +64,49 @@ class UserTest extends TestCase
         ]);
 
         $token = $loginResponse->json('access_token');
+        User::factory()->count(25)->create();
 
         $response = $this->withHeaders([
             'Authorization' => "Bearer $token",
-        ])->getJson('/api/users');
+        ])->getJson('/api/users?page=1&per_page=10');
 
         $response->assertStatus(200)
-                 ->assertJsonStructure([['id', 'name', 'email']]);
+                 ->assertJsonStructure([
+                     'current_page',
+                     'data' => [
+                         '*' => ['id', 'name', 'email']
+                     ],
+                     'per_page',
+                     'total',
+                     'last_page',
+                 ])
+                 ->assertJsonCount(10, 'data');
+    }
+
+    public function test_user_index_caching()
+    {
+        $admin = User::factory()->create();
+        $admin->userRoles()->create(['role' => 'admin']);
+
+        $loginResponse = $this->postJson('/api/login', [
+            'email' => $admin->email,
+            'password' => 'password123',
+        ]);
+
+        $token = $loginResponse->json('access_token');
+        User::factory()->count(5)->create();
+
+        $response1 = $this->getJson('/api/users?page=1&per_page=10');
+        $this->assertEquals(6, count($response1->json('data')));
+
+        Cache::shouldReceive('remember')
+            ->once()
+            ->andReturn($response1->json());
+
+        $response2 = $this->withHeaders([
+            'Authorization' => "Bearer $token",
+        ])->getJson('/api/users?page=1&per_page=10');
+        $this->assertEquals(6, count($response2->json('data')));
     }
 
     public function test_user_can_get_single_user()

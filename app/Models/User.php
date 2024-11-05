@@ -17,8 +17,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
  *     @OA\Property(property="id", type="integer", example=1, description="ID pengguna"),
  *     @OA\Property(property="name", type="string", example="John Doe", description="Nama pengguna"),
  *     @OA\Property(property="email", type="string", example="johndoe@example.com", description="Email pengguna"),
- *     @OA\Property(property="age", type="integer", example=25, description="Umur pengguna (opsional)"),
- *     @OA\Property(property="membership_status", type="string", example="active", description="Status keanggotaan (opsional)")
+ *     @OA\Property(property="umur", type="integer", example=25, description="Umur pengguna (opsional)"),
+ *     @OA\Property(property="status_keanggotaan", type="string", example="active", description="Status keanggotaan (opsional)")
  * )
  */
 

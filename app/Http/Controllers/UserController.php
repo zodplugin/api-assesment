@@ -6,36 +6,57 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-
-class UserController extends Controller
-{
-    /**
- * @OA\Get(
- *     path="/users",
- *     summary="Mendapatkan daftar semua pengguna (hanya untuk admin)",
- *     tags={"Users"},
- *     security={{"bearerAuth": {}}},
- *     @OA\Response(
- *         response=200,
- *         description="Daftar pengguna",
- *         @OA\JsonContent(
- *             type="array",
- *             @OA\Items(ref="#/components/schemas/User")
- *         )
- *     ),
- *     @OA\Response(
- *         response=401,
- *         description="Unauthorized",
- *         @OA\JsonContent(
- *             @OA\Property(property="error", type="string", example="Unauthorized access")
- *         )
- *     )
+use Illuminate\Support\Facades\Cache;
+/**
+ * @OA\Schema(
+ *     schema="UserPaginationResponse",
+ *     type="object",
+ *     @OA\Property(property="current_page", type="integer"),
+ *     @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/User")),
+ *     @OA\Property(property="per_page", type="integer"),
+ *     @OA\Property(property="total", type="integer"),
+ *     @OA\Property(property="last_page", type="integer")
  * )
  */
-    public function index()
+class UserController extends Controller
+{
+/**
+ * @OA\Get(
+ *     path="/api/users",
+ *     tags={"Users"},
+ *     summary="Mengambil daftar pengguna",
+ *     description="Mengambil daftar pengguna dengan pagination dan caching.",
+ *     @OA\Parameter(
+ *         name="page",
+ *         in="query",
+ *         @OA\Schema(type="integer", default=1),
+ *         description="Nomor halaman yang ingin diambil."
+ *     ),
+ *     @OA\Parameter(
+ *         name="per_page",
+ *         in="query",
+ *         @OA\Schema(type="integer", default=10),
+ *         description="Jumlah hasil per halaman."
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Daftar pengguna berhasil diambil.",
+ *         @OA\JsonContent(ref="#/components/schemas/UserPaginationResponse")
+ *     ),
+ *     @OA\Response(response=500, description="Terjadi kesalahan pada server.")
+ * )
+ */
+    public function index(Request $request)
     {
-        $users = User::all();
-        return response()->json($users, 200);
+        $perPage = $request->query('per_page', 10);
+        $page = $request->query('page', 1);
+        $cacheKey = "users_page_{$page}_per_{$perPage}";
+
+        $users = Cache::remember($cacheKey, 3600, function () use ($perPage) {
+            return User::paginate($perPage);
+        });
+
+        return response()->json($users);;
     }
 
      /**

@@ -19,101 +19,49 @@
         }
     ],
     "paths": {
-        "/users": {
+        "/api/users": {
             "get": {
                 "tags": [
                     "Users"
                 ],
-                "summary": "Mendapatkan daftar semua pengguna (hanya untuk admin)",
-                "operationId": "7e2f5799553ec93c9c43e2a58490d447",
+                "summary": "Mengambil daftar pengguna",
+                "description": "Mengambil daftar pengguna dengan pagination dan caching.",
+                "operationId": "c457726701591d1183b53aa71fc13441",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Nomor halaman yang ingin diambil.",
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Jumlah hasil per halaman.",
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "Daftar pengguna",
+                        "description": "Daftar pengguna berhasil diambil.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/User"
-                                    }
+                                    "$ref": "#/components/schemas/UserPaginationResponse"
                                 }
                             }
                         }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "error": {
-                                            "type": "string",
-                                            "example": "Unauthorized access"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "post": {
-                "tags": [
-                    "Users"
-                ],
-                "summary": "Menambahkan pengguna baru (hanya untuk admin)",
-                "operationId": "a1fce870c566eb5fc0cf3178ec5d2fed",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "name": {
-                                        "type": "string",
-                                        "example": "Jane Doe"
-                                    },
-                                    "email": {
-                                        "type": "string",
-                                        "example": "jane@example.com"
-                                    },
-                                    "password": {
-                                        "type": "string",
-                                        "example": "password123"
-                                    },
-                                    "umur": {
-                                        "type": "integer",
-                                        "example": 30
-                                    },
-                                    "status_keanggotaan": {
-                                        "type": "string",
-                                        "example": "premium"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "User created successfully"
                     },
                     "500": {
-                        "description": "Failed to create user"
+                        "description": "Terjadi kesalahan pada server."
                     }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
+                }
             }
         },
         "/users/{id}": {
@@ -278,7 +226,7 @@
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "messumur": {
+                                        "message": {
                                             "type": "string",
                                             "example": "The given data was invalid."
                                         },
@@ -331,7 +279,7 @@
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "messumur": {
+                                        "message": {
                                             "type": "string",
                                             "example": "User deleted successfully."
                                         }
@@ -469,10 +417,87 @@
                     }
                 }
             }
+        },
+        "/users": {
+            "post": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Menambahkan pengguna baru (hanya untuk admin)",
+                "operationId": "a1fce870c566eb5fc0cf3178ec5d2fed",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Jane Doe"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "jane@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "password123"
+                                    },
+                                    "umur": {
+                                        "type": "integer",
+                                        "example": 30
+                                    },
+                                    "status_keanggotaan": {
+                                        "type": "string",
+                                        "example": "premium"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "User created successfully"
+                    },
+                    "500": {
+                        "description": "Failed to create user"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
         }
     },
     "components": {
         "schemas": {
+            "UserPaginationResponse": {
+                "properties": {
+                    "current_page": {
+                        "type": "integer"
+                    },
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/User"
+                        }
+                    },
+                    "per_page": {
+                        "type": "integer"
+                    },
+                    "total": {
+                        "type": "integer"
+                    },
+                    "last_page": {
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
             "User": {
                 "required": [
                     "id",
@@ -495,12 +520,12 @@
                         "type": "string",
                         "example": "johndoe@example.com"
                     },
-                    "age": {
+                    "umur": {
                         "description": "Umur pengguna (opsional)",
                         "type": "integer",
                         "example": 25
                     },
-                    "membership_status": {
+                    "status_keanggotaan": {
                         "description": "Status keanggotaan (opsional)",
                         "type": "string",
                         "example": "active"
