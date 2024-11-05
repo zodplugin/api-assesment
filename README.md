@@ -1,6 +1,6 @@
-# Nama Proyek
+# API untuk Manajemen Pengguna
 
-Deskripsi singkat tentang proyek ini.
+Perusahaan "DataTech" sedang membangun aplikasi manajemen pengguna yang digunakan oleh Front-End Developer untuk menampilkan, menambah, mengedit, dan menghapus data pengguna. Anda diminta untuk membangun RESTful API yang memungkinkan Front-End berkomunikasi dengan server untuk mengelola data pengguna tersebut. API ini harus mengakomodasi CRUD operations dan dilengkapi dengan autentikasi pengguna.
 
 ## Daftar Isi
 
